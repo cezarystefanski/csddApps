@@ -22,6 +22,8 @@ var App = function () {
             errorMsg += params + " has no children elements";
         } else if (error === "initFailed") {
             errorMsg += "Initialization failed";
+        } else if (error === "wrongDataType") {
+            errorMsg += "Wrong data type/types in the options object";
         }
         if (error) {
             window.console.error(errorMsg);
@@ -38,8 +40,17 @@ var App = function () {
         var sliderOpts = {},
             moduleName = "cSlider",
             self = this,
-            prepareSlides = function (numberOfSlides) {
-                window.console.info(numberOfSlides);
+            prepareSlides = function (numberOfSlides, slides, $) {
+                var widthOfOne = 100 / numberOfSlides + "%";
+                slides.each(function () {
+                    $(this).css({
+                        "width" : widthOfOne,
+                        "float" : "left"
+                    });
+                    $(this).children().css({
+                        "width" : "100%"
+                    });
+                });
             },
             createSlider = function (options) {
                 var $,
@@ -47,8 +58,11 @@ var App = function () {
                     $slides,
                     sliderName = "cSlider",
                     slideName = "cSlide",
+                    upperContainerName = "cSliderContainer",
                     iterator,
-                    noOfSlides;
+                    noOfSlides,
+                    $sliderUpperContainer,
+                    $wrapper;
 
                 if (typeof window.jQuery !== "function") {
                     self.log("no$");
@@ -61,19 +75,32 @@ var App = function () {
                     self.log("noContainer", options.sliderContainer);
                     return;
                 }
+                $sliderUpperContainer = $("<div></div>").addClass(upperContainerName).css({
+                    "width" : "100%",
+                    "overflow" : "hidden"
+                });
                 $container.addClass(sliderName);
                 $slides = $container.children();
                 if (!$slides.length) {
                     self.log("noChildren", options.sliderContainer);
                     return;
                 }
+                $wrapper = $container.parent();
+                $sliderUpperContainer.append($container);
+                $wrapper.append($sliderUpperContainer);
                 iterator = 1;
                 $slides.addClass(slideName).each(function () {
                     $(this).attr("data-slide_number", iterator);
                     iterator = iterator + 1;
                 });
                 noOfSlides = iterator - 1;
-                prepareSlides(noOfSlides);
+                $container.css({
+                    "width" : noOfSlides * 100 + "%",
+                    "transition" : "all 800ms cubic-bezier(0.77, 0, 0.175, 1)",
+                    "transform" : "translateZ(0)",
+                    "marginLeft" : "0%"
+                });
+                prepareSlides(noOfSlides, $slides, $);
             };
 
         this.log = function (error, params) {
@@ -171,14 +198,53 @@ var App = function () {
                 fbOpts.hideCover = options.hideCover || false;
                 fbOpts.showFacePile = options.showFacePile || true;
                 fbOpts.adaptWidth = options.adaptWidth || true;
+                if (typeof options.page !== "string" ||
+                        typeof fbOpts.fWidth !== "number" ||
+                        typeof fbOpts.fHeight !== "number" ||
+                        typeof fbOpts.hideCover !== "boolean" ||
+                        typeof fbOpts.showFacePile !== "boolean" ||
+                        typeof fbOpts.adaptWidth !== "boolean") {
+                    self.log("wrongDataType");
+                    return def.reject();
+                }
                 return def.resolve();
             },
             insertSDK = function ($) {
                 $('body').prepend($fbSDK);
             },
             createWidget = function ($) {
-                window.console.info($);
-                window.console.info("Widget created!");
+                var $container,
+                    $widget,
+                    page,
+                    width,
+                    height,
+                    cover,
+                    tabs,
+                    facepile,
+                    adaptWidth;
+                $container = $(fbOpts.container);
+                if (!$container.length) {
+                    self.log("noContainer", options.sliderContainer);
+                    return;
+                }
+                $widget = $("<div></div>").addClass("fb-page");
+                page = "https://www.facebook.com/" + fbOpts.page;
+                width = fbOpts.fWidth;
+                height = fbOpts.fHeight;
+                cover = fbOpts.hideCover;
+                tabs = fbOpts.tabs.join(",");
+                facepile = fbOpts.showFacePile;
+                adaptWidth = fbOpts.adaptWidth;
+                $widget.attr({
+                    "data-href" : page,
+                    "data-width" : width,
+                    "data-height" : height,
+                    "data-hide-cover" : cover,
+                    "data-tabs" : tabs,
+                    "data-show-facepile" : facepile,
+                    "data-adapt-container-width" : adaptWidth
+                });
+                $container.append($widget);
             };
 
         this.init = function (options) {

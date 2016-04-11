@@ -6,6 +6,7 @@
         autoScroll: false
     });
     app.facebook = new app.FacebookPlugin({
-        container: ".facebookCon"
+        container: ".facebookCon",
+        page: "cudnemanowcewetlina"
     });
 }());
