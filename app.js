@@ -273,5 +273,31 @@ var App = function () {
         }
     };
 
+    this.setCookie = function (cname, cvalue, exdays) {
+        var d = new Date(),
+            expires;
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=" + cvalue + "; " + expires;
+    };
+
+    this.getCookie = function (cname) {
+        var name = cname + "=",
+            ca = document.cookie.split(';'),
+            i,
+            caLength = ca.length,
+            c;
+        for (i = 0; i < caLength; i += 1) {
+            c = ca[i];
+            while (c.charAt(0) === ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    };
+
     this.logger();
 };

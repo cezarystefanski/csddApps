@@ -1,0 +1,22 @@
+{
+  "name": "csddApps",
+  "description": "",
+  "main": "app.js",
+  "moduleType": [],
+  "authors": [
+    "Cezary Stefanski"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "^2.2.3"
+  }
+}
